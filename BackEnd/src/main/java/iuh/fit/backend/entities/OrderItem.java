@@ -4,12 +4,18 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "order_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,18 +46,14 @@ public class OrderItem {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    // Constructors
-    public OrderItem() {
-        this.createdAt = LocalDateTime.now();
-    }
-
+    // Custom constructor
     public OrderItem(Order order, Product product, Integer quantity, BigDecimal unitPrice) {
-        this();
         this.order = order;
         this.product = product;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
         this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(quantity));
+        this.createdAt = LocalDateTime.now();
     }
 
     // Calculate total price when quantity or unit price changes
@@ -61,62 +63,26 @@ public class OrderItem {
         }
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    // Lifecycle callbacks
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        calculateTotalPrice();
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    @PreUpdate
+    public void preUpdate() {
+        calculateTotalPrice();
     }
 
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
-        this.order = order;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
+    // Custom setters to auto-calculate total price
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
         calculateTotalPrice();
     }
 
-    public BigDecimal getUnitPrice() {
-        return unitPrice;
-    }
-
     public void setUnitPrice(BigDecimal unitPrice) {
         this.unitPrice = unitPrice;
         calculateTotalPrice();
-    }
-
-    public BigDecimal getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(BigDecimal totalPrice) {
-        this.totalPrice = totalPrice;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }
