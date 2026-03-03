@@ -16,6 +16,8 @@ import {
   Loader2,
 } from 'lucide-react';
 import customerService from '../services/customerService';
+import CustomerDetailModal from '../components/CustomerDetailModal';
+import Toast from '../components/Toast';
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +27,9 @@ const Customers = () => {
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toast, setToast] = useState(null);
   const pageSize = 10;
 
   useEffect(() => {
@@ -60,9 +65,10 @@ const Customers = () => {
         await customerService.deleteCustomer(id);
         fetchCustomers();
         fetchTotalCount();
+        setToast({ message: 'Customer deleted successfully!', type: 'success' });
       } catch (error) {
         console.error('Error deleting customer:', error);
-        alert('Failed to delete customer');
+        setToast({ message: 'Failed to delete customer', type: 'error' });
       }
     }
   };
@@ -73,9 +79,41 @@ const Customers = () => {
         active: !customer.active
       });
       fetchCustomers();
+      setToast({ 
+        message: `Customer ${!customer.active ? 'activated' : 'deactivated'} successfully!`, 
+        type: 'success' 
+      });
     } catch (error) {
       console.error('Error updating customer:', error);
-      alert('Failed to update customer');
+      setToast({ message: 'Failed to update customer', type: 'error' });
+    }
+  };
+
+  const handleViewDetails = (customer) => {
+    setSelectedCustomer(customer);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveCustomer = async (id, data) => {
+    try {
+      if (id) {
+        // Update existing customer
+        await customerService.updateCustomer(id, data);
+        setToast({ message: 'Customer updated successfully!', type: 'success' });
+      } else {
+        // Create new customer via register API
+        await customerService.createCustomer(data);
+        setToast({ message: 'Customer created successfully!', type: 'success' });
+      }
+      setIsModalOpen(false);
+      fetchCustomers();
+      fetchTotalCount();
+    } catch (error) {
+      console.error('Error saving customer:', error);
+      setToast({ 
+        message: error.response?.data?.message || 'Failed to save customer', 
+        type: 'error' 
+      });
     }
   };
 
@@ -183,6 +221,16 @@ const Customers = () => {
           <button className="inline-flex items-center px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
             <Download className="w-4 h-4 mr-2" />
             Export
+          </button>
+          <button 
+            onClick={() => {
+              setSelectedCustomer(null);
+              setIsModalOpen(true);
+            }}
+            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Customer
           </button>
         </div>
       </div>
@@ -304,7 +352,11 @@ const Customers = () => {
             </thead>
             <tbody className="divide-y divide-slate-200">
               {filteredCustomers.map((customer) => (
-                <tr key={customer.id} className="hover:bg-slate-50">
+                <tr 
+                  key={customer.id} 
+                  className="hover:bg-slate-50 cursor-pointer"
+                  onClick={() => handleViewDetails(customer)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
@@ -355,17 +407,33 @@ const Customers = () => {
                       {getStatusText(customer.active)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center space-x-2">
                       <button 
-                        onClick={() => handleToggleActive(customer)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDetails(customer);
+                        }}
                         className="p-1 text-slate-400 hover:text-blue-600"
-                        title={customer.active ? 'Deactivate' : 'Activate'}
+                        title="View Details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button 
-                        onClick={() => handleDelete(customer.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleActive(customer);
+                        }}
+                        className="p-1 text-slate-400 hover:text-green-600"
+                        title={customer.active ? 'Deactivate' : 'Activate'}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(customer.id);
+                        }}
                         className="p-1 text-slate-400 hover:text-red-600"
                         title="Delete"
                       >
@@ -417,6 +485,23 @@ const Customers = () => {
           </button>
         </div>
       </div>
+      
+      {/* Customer Detail Modal */}
+      <CustomerDetailModal
+        customer={selectedCustomer}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveCustomer}
+      />
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };

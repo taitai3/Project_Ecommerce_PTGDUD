@@ -15,6 +15,19 @@ const customerService = {
     return response.data;
   },
 
+  // Create new customer
+  createCustomer: async (data) => {
+    const response = await api.post('/auth/register', {
+      username: data.username,
+      email: data.email,
+      password: data.password,
+      fullName: data.fullName,
+      phoneNumber: data.phone,
+      address: data.address
+    });
+    return response.data;
+  },
+
   // Update customer
   updateCustomer: async (id, data) => {
     const response = await api.put(`/users/${id}`, data);
