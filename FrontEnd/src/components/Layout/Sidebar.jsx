@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -20,27 +19,27 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
   ];
 
   return (
-    <div className={`bg-white border-r border-slate-200 transition-all duration-300 ${
+    <div className={`bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
     } flex flex-col h-full`}>
       {/* Logo */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200">
+      <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
         {!isCollapsed && (
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
               <Package className="w-5 h-5 text-white" />
             </div>
-            <span className="font-semibold text-slate-900">Admin Panel</span>
+            <span className="font-semibold text-slate-900 dark:text-white">Admin Panel</span>
           </div>
         )}
         <button
           onClick={onToggle}
-          className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
         >
           {isCollapsed ? (
-            <ChevronRight className="w-4 h-4 text-slate-600" />
+            <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-300" />
           ) : (
-            <ChevronLeft className="w-4 h-4 text-slate-600" />
+            <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-300" />
           )}
         </button>
       </div>
@@ -54,8 +53,8 @@ const Sidebar = ({ isCollapsed, onToggle }) => {
             className={({ isActive }) =>
               `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 border-r-2 border-primary-600'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
               }`
             }
           >

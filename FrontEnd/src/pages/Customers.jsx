@@ -214,11 +214,11 @@ const Customers = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Customers</h1>
-          <p className="text-slate-600">Manage your customer relationships</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Customers</h1>
+          <p className="text-slate-600 dark:text-slate-400">Manage your customer relationships</p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
-          <button className="inline-flex items-center px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+          <button className="inline-flex items-center px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
             <Download className="w-4 h-4 mr-2" />
             Export
           </button>
@@ -237,86 +237,86 @@ const Customers = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">Total Customers</p>
-              <p className="text-2xl font-bold text-slate-900">{totalCustomers}</p>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Customers</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalCustomers}</p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <User className="w-6 h-6 text-blue-600" />
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">Active</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Active</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {customers.filter(c => c.active).length}
               </p>
             </div>
-            <div className="p-3 bg-green-50 rounded-lg">
-              <User className="w-6 h-6 text-green-600" />
+            <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <User className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">Inactive</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Inactive</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {customers.filter(c => !c.active).length}
               </p>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <User className="w-6 h-6 text-gray-600" />
+            <div className="p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg">
+              <User className="w-6 h-6 text-gray-600 dark:text-gray-400" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">Admins</p>
-              <p className="text-2xl font-bold text-slate-900">
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Admins</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">
                 {customers.filter(c => c.role === 'ADMIN').length}
               </p>
             </div>
-            <div className="p-3 bg-purple-50 rounded-lg">
-              <User className="w-6 h-6 text-purple-600" />
+            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <User className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border border-slate-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Search customers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 w-full border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
           <div className="flex items-center space-x-4">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
-            <button className="inline-flex items-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+            <button className="inline-flex items-center px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
               <Calendar className="w-4 h-4 mr-2" />
               Join Date
             </button>
-            <button className="inline-flex items-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+            <button className="inline-flex items-center px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
               <Filter className="w-4 h-4 mr-2" />
               More Filters
             </button>
@@ -325,60 +325,60 @@ const Customers = () => {
       </div>
 
       {/* Customers Table */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50">
+            <thead className="bg-slate-50 dark:bg-slate-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Location / Role
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Join Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
               {filteredCustomers.map((customer) => (
                 <tr 
                   key={customer.id} 
-                  className="hover:bg-slate-50 cursor-pointer"
+                  className="hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer"
                   onClick={() => handleViewDetails(customer)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex-shrink-0">
                         <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-slate-400" />
+                          <User className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-slate-900">{customer.fullName}</div>
-                        <div className="text-sm text-slate-500">@{customer.username}</div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white">{customer.fullName}</div>
+                        <div className="text-sm text-slate-500 dark:text-slate-400">@{customer.username}</div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="space-y-1">
-                      <div className="flex items-center text-sm text-slate-900">
-                        <Mail className="w-3 h-3 mr-2 text-slate-400" />
+                      <div className="flex items-center text-sm text-slate-900 dark:text-white">
+                        <Mail className="w-3 h-3 mr-2 text-slate-400 dark:text-slate-500" />
                         {customer.email}
                       </div>
                       {customer.phone && (
-                        <div className="flex items-center text-sm text-slate-500">
-                          <Phone className="w-3 h-3 mr-2 text-slate-400" />
+                        <div className="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                          <Phone className="w-3 h-3 mr-2 text-slate-400 dark:text-slate-500" />
                           {customer.phone}
                         </div>
                       )}
@@ -386,19 +386,19 @@ const Customers = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {customer.address ? (
-                      <div className="flex items-center text-sm text-slate-900">
-                        <MapPin className="w-3 h-3 mr-2 text-slate-400" />
+                      <div className="flex items-center text-sm text-slate-900 dark:text-white">
+                        <MapPin className="w-3 h-3 mr-2 text-slate-400 dark:text-slate-500" />
                         {customer.address}
                       </div>
                     ) : (
-                      <span className="text-sm text-slate-400">N/A</span>
+                      <span className="text-sm text-slate-400 dark:text-slate-500">N/A</span>
                     )}
-                    <div className="text-sm text-slate-500">
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
                       {customer.role}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-slate-500">
+                    <div className="text-sm text-slate-500 dark:text-slate-400">
                       {new Date(customer.createdAt).toLocaleDateString()}
                     </div>
                   </td>
@@ -450,7 +450,7 @@ const Customers = () => {
 
       {/* Pagination */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-700">
+        <div className="text-sm text-slate-700 dark:text-slate-300">
           Showing <span className="font-medium">{currentPage * pageSize + 1}</span> to{' '}
           <span className="font-medium">{Math.min((currentPage + 1) * pageSize, totalCustomers)}</span> of{' '}
           <span className="font-medium">{totalCustomers}</span> results
@@ -459,7 +459,7 @@ const Customers = () => {
           <button 
             onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
             disabled={currentPage === 0}
-            className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
@@ -470,7 +470,7 @@ const Customers = () => {
               className={`px-3 py-2 text-sm rounded-lg ${
                 currentPage === index
                   ? 'bg-primary-600 text-white'
-                  : 'border border-slate-200 hover:bg-slate-50'
+                  : 'border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-white'
               }`}
             >
               {index + 1}
@@ -479,7 +479,7 @@ const Customers = () => {
           <button 
             onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
             disabled={currentPage >= totalPages - 1}
-            className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>

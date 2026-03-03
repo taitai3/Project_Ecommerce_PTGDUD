@@ -17,15 +17,15 @@ const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
   };
 
   const bgColors = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    warning: 'bg-yellow-50 border-yellow-200',
+    success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+    error: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+    warning: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
   };
 
   const textColors = {
-    success: 'text-green-800',
-    error: 'text-red-800',
-    warning: 'text-yellow-800',
+    success: 'text-green-800 dark:text-green-300',
+    error: 'text-red-800 dark:text-red-300',
+    warning: 'text-yellow-800 dark:text-yellow-300',
   };
 
   return (

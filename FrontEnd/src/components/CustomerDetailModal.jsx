@@ -56,22 +56,22 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
               {isNewCustomer ? 'Add New Customer' : 'Customer Details'}
             </h2>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
               {isNewCustomer ? 'Create a new customer account' : 'View and edit customer information'}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
@@ -79,14 +79,14 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900 flex items-center">
-              <User className="w-5 h-5 mr-2 text-primary-600" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
+              <User className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" />
               Basic Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Username {isNewCustomer && <span className="text-red-500">*</span>}
                 </label>
                 <input
@@ -95,20 +95,20 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
                   value={formData.username}
                   onChange={handleChange}
                   disabled={!isNewCustomer}
-                  className={`w-full px-4 py-2 border border-slate-300 rounded-lg ${
+                  className={`w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white ${
                     isNewCustomer 
                       ? 'focus:outline-none focus:ring-2 focus:ring-primary-500' 
-                      : 'bg-slate-50 text-slate-500 cursor-not-allowed'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed'
                   }`}
                   required={isNewCustomer}
                 />
                 {!isNewCustomer && (
-                  <p className="text-xs text-slate-500 mt-1">Username cannot be changed</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Username cannot be changed</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Full Name {isNewCustomer && <span className="text-red-500">*</span>}
                 </label>
                 <input
@@ -116,7 +116,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
@@ -124,7 +124,7 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
 
             {isNewCustomer && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Password <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -132,25 +132,25 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                   minLength="6"
                 />
-                <p className="text-xs text-slate-500 mt-1">Minimum 6 characters</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Minimum 6 characters</p>
               </div>
             )}
           </div>
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900 flex items-center">
-              <Mail className="w-5 h-5 mr-2 text-primary-600" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
+              <Mail className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" />
               Contact Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Email
                 </label>
                 <input
@@ -158,13 +158,13 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Phone Number
                 </label>
                 <input
@@ -172,13 +172,13 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Address
               </label>
               <textarea
@@ -186,39 +186,39 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
                 value={formData.address}
                 onChange={handleChange}
                 rows="3"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </div>
 
           {/* Account Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900 flex items-center">
-              <Shield className="w-5 h-5 mr-2 text-primary-600" />
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center">
+              <Shield className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" />
               Account Information
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   Role
                 </label>
                 <input
                   type="text"
                   value={customer?.role || 'USER'}
                   disabled
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed"
+                  className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
                 />
               </div>
 
               {!isNewCustomer && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Member Since
                   </label>
-                  <div className="flex items-center px-4 py-2 border border-slate-300 rounded-lg bg-slate-50">
-                    <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                    <span className="text-slate-700">
+                  <div className="flex items-center px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-800">
+                    <Calendar className="w-4 h-4 mr-2 text-slate-400 dark:text-slate-500" />
+                    <span className="text-slate-700 dark:text-slate-300">
                       {new Date(customer.createdAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -233,20 +233,20 @@ const CustomerDetailModal = ({ customer, isOpen, onClose, onSave }) => {
                 name="active"
                 checked={formData.active}
                 onChange={handleChange}
-                className="w-4 h-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
+                className="w-4 h-4 text-primary-600 border-slate-300 dark:border-slate-600 rounded focus:ring-primary-500"
               />
-              <label htmlFor="active" className="ml-2 text-sm font-medium text-slate-700">
+              <label htmlFor="active" className="ml-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                 Account Active
               </label>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200 dark:border-slate-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+              className="px-6 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>
