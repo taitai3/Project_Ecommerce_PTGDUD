@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
@@ -12,13 +12,74 @@ import {
   MapPin,
   Calendar,
   User,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
+import customerService from '../services/customerService';
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const pageSize = 10;
 
-  const customers = [
+  useEffect(() => {
+    fetchCustomers();
+    fetchTotalCount();
+  }, [currentPage]);
+
+  const fetchCustomers = async () => {
+    try {
+      setLoading(true);
+      const data = await customerService.getAllCustomers(currentPage, pageSize);
+      setCustomers(data.content || []);
+      setTotalPages(data.totalPages || 0);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTotalCount = async () => {
+    try {
+      const count = await customerService.getTotalCustomers();
+      setTotalCustomers(count);
+    } catch (error) {
+      console.error('Error fetching total count:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this customer?')) {
+      try {
+        await customerService.deleteCustomer(id);
+        fetchCustomers();
+        fetchTotalCount();
+      } catch (error) {
+        console.error('Error deleting customer:', error);
+        alert('Failed to delete customer');
+      }
+    }
+  };
+
+  const handleToggleActive = async (customer) => {
+    try {
+      await customerService.updateCustomer(customer.id, {
+        active: !customer.active
+      });
+      fetchCustomers();
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      alert('Failed to update customer');
+    }
+  };
+
+  const fakeCustomers = [
     {
       id: 1,
       name: 'Olivia Martin',
@@ -81,31 +142,34 @@ const Customers = () => {
     },
   ];
 
-  const statusOptions = ['all', 'Active', 'VIP', 'New', 'Inactive'];
+  const getStatusColor = (active) => {
+    return active 
+      ? 'bg-green-100 text-green-800' 
+      : 'bg-gray-100 text-gray-800';
+  };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Active':
-        return 'bg-green-100 text-green-800';
-      case 'VIP':
-        return 'bg-purple-100 text-purple-800';
-      case 'New':
-        return 'bg-blue-100 text-blue-800';
-      case 'Inactive':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const getStatusText = (active) => {
+    return active ? 'Active' : 'Inactive';
   };
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = 
-      customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone.includes(searchTerm);
-    const matchesStatus = statusFilter === 'all' || customer.status === statusFilter;
+      customer.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      customer.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'Active' && customer.active) ||
+      (statusFilter === 'Inactive' && !customer.active);
     return matchesSearch && matchesStatus;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -120,10 +184,6 @@ const Customers = () => {
             <Download className="w-4 h-4 mr-2" />
             Export
           </button>
-          <button className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Customer
-          </button>
         </div>
       </div>
 
@@ -133,7 +193,7 @@ const Customers = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-600">Total Customers</p>
-              <p className="text-2xl font-bold text-slate-900">2,420</p>
+              <p className="text-2xl font-bold text-slate-900">{totalCustomers}</p>
             </div>
             <div className="p-3 bg-blue-50 rounded-lg">
               <User className="w-6 h-6 text-blue-600" />
@@ -144,7 +204,9 @@ const Customers = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-slate-600">Active</p>
-              <p className="text-2xl font-bold text-slate-900">1,890</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {customers.filter(c => c.active).length}
+              </p>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
               <User className="w-6 h-6 text-green-600" />
@@ -154,22 +216,26 @@ const Customers = () => {
         <div className="bg-white rounded-lg border border-slate-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">VIP Customers</p>
-              <p className="text-2xl font-bold text-slate-900">156</p>
+              <p className="text-sm font-medium text-slate-600">Inactive</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {customers.filter(c => !c.active).length}
+              </p>
             </div>
-            <div className="p-3 bg-purple-50 rounded-lg">
-              <User className="w-6 h-6 text-purple-600" />
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <User className="w-6 h-6 text-gray-600" />
             </div>
           </div>
         </div>
         <div className="bg-white rounded-lg border border-slate-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-600">New This Month</p>
-              <p className="text-2xl font-bold text-slate-900">89</p>
+              <p className="text-sm font-medium text-slate-600">Admins</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {customers.filter(c => c.role === 'ADMIN').length}
+              </p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
-              <User className="w-6 h-6 text-orange-600" />
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <User className="w-6 h-6 text-purple-600" />
             </div>
           </div>
         </div>
@@ -194,11 +260,9 @@ const Customers = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
-              {statusOptions.map(status => (
-                <option key={status} value={status}>
-                  {status === 'all' ? 'All Status' : status}
-                </option>
-              ))}
+              <option value="all">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
             </select>
             <button className="inline-flex items-center px-3 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
               <Calendar className="w-4 h-4 mr-2" />
@@ -225,13 +289,10 @@ const Customers = () => {
                   Contact
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Location
+                  Location / Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Orders
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Total Spent
+                  Join Date
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                   Status
@@ -247,21 +308,13 @@ const Customers = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex-shrink-0">
-                        {customer.avatar ? (
-                          <img
-                            src={customer.avatar}
-                            alt={customer.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-slate-400" />
-                          </div>
-                        )}
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User className="w-5 h-5 text-slate-400" />
+                        </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-slate-900">{customer.name}</div>
-                        <div className="text-sm text-slate-500">ID: {customer.id}</div>
+                        <div className="text-sm font-medium text-slate-900">{customer.fullName}</div>
+                        <div className="text-sm text-slate-500">@{customer.username}</div>
                       </div>
                     </div>
                   </td>
@@ -271,45 +324,52 @@ const Customers = () => {
                         <Mail className="w-3 h-3 mr-2 text-slate-400" />
                         {customer.email}
                       </div>
-                      <div className="flex items-center text-sm text-slate-500">
-                        <Phone className="w-3 h-3 mr-2 text-slate-400" />
-                        {customer.phone}
+                      {customer.phone && (
+                        <div className="flex items-center text-sm text-slate-500">
+                          <Phone className="w-3 h-3 mr-2 text-slate-400" />
+                          {customer.phone}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {customer.address ? (
+                      <div className="flex items-center text-sm text-slate-900">
+                        <MapPin className="w-3 h-3 mr-2 text-slate-400" />
+                        {customer.address}
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center text-sm text-slate-900">
-                      <MapPin className="w-3 h-3 mr-2 text-slate-400" />
-                      {customer.location}
-                    </div>
+                    ) : (
+                      <span className="text-sm text-slate-400">N/A</span>
+                    )}
                     <div className="text-sm text-slate-500">
-                      Joined {customer.joinDate}
+                      {customer.role}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-slate-900">{customer.totalOrders}</div>
+                    <div className="text-sm text-slate-500">
+                      {new Date(customer.createdAt).toLocaleDateString()}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-slate-900">{customer.totalSpent}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(customer.status)}`}>
-                      {customer.status}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(customer.active)}`}>
+                      {getStatusText(customer.active)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      <button className="p-1 text-slate-400 hover:text-slate-600">
+                      <button 
+                        onClick={() => handleToggleActive(customer)}
+                        className="p-1 text-slate-400 hover:text-blue-600"
+                        title={customer.active ? 'Deactivate' : 'Activate'}
+                      >
                         <Eye className="w-4 h-4" />
                       </button>
-                      <button className="p-1 text-slate-400 hover:text-slate-600">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-slate-400 hover:text-slate-600">
-                        <Mail className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 text-slate-400 hover:text-slate-600">
-                        <MoreHorizontal className="w-4 h-4" />
+                      <button 
+                        onClick={() => handleDelete(customer.id)}
+                        className="p-1 text-slate-400 hover:text-red-600"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </td>
@@ -323,20 +383,36 @@ const Customers = () => {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-slate-700">
-          Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredCustomers.length}</span> of{' '}
-          <span className="font-medium">{customers.length}</span> results
+          Showing <span className="font-medium">{currentPage * pageSize + 1}</span> to{' '}
+          <span className="font-medium">{Math.min((currentPage + 1) * pageSize, totalCustomers)}</span> of{' '}
+          <span className="font-medium">{totalCustomers}</span> results
         </div>
         <div className="flex items-center space-x-2">
-          <button className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50">
+          <button 
+            onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+            disabled={currentPage === 0}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Previous
           </button>
-          <button className="px-3 py-2 text-sm bg-primary-600 text-white rounded-lg">
-            1
-          </button>
-          <button className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">
-            2
-          </button>
-          <button className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50">
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentPage(index)}
+              className={`px-3 py-2 text-sm rounded-lg ${
+                currentPage === index
+                  ? 'bg-primary-600 text-white'
+                  : 'border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button 
+            onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+            disabled={currentPage >= totalPages - 1}
+            className="px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Next
           </button>
         </div>
