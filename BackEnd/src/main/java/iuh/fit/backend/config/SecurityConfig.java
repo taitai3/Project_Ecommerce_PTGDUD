@@ -66,16 +66,21 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/products/**").permitAll()
+                .requestMatchers("/api/products/**").permitAll()
                 .requestMatchers("/categories/**").permitAll()
+                .requestMatchers("/api/categories/**").permitAll()
                 
                 // User endpoints
                 .requestMatchers("/cart/**").hasRole("USER")
+                .requestMatchers("/api/cart/**").hasRole("USER")
                 .requestMatchers("/orders/user/**").hasRole("USER")
                 .requestMatchers("/orders").hasRole("USER")
                 
                 // Admin endpoints
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .requestMatchers("/orders/admin/**").hasRole("ADMIN")
                 
                 // Any other request needs authentication
