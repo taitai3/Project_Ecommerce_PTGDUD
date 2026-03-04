@@ -7,11 +7,13 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Tag,
 } from 'lucide-react';
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+    { name: 'Categories', href: '/categories', icon: Tag },
     { name: 'Products', href: '/products', icon: Package },
     { name: 'Orders', href: '/orders', icon: ShoppingCart },
     { name: 'Customers', href: '/customers', icon: Users },
