@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   Filter,
-  Download,
   Plus,
   Eye,
   Edit,
-  MoreHorizontal,
   Mail,
   Phone,
   MapPin,
@@ -17,7 +15,9 @@ import {
 } from 'lucide-react';
 import customerService from '../services/customerService';
 import CustomerDetailModal from '../components/CustomerDetailModal';
+import ExportMenu from '../components/ExportMenu';
 import Toast from '../components/Toast';
+import { exportCustomersToCSV, exportCustomersToExcel } from '../utils/exportUtils';
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -218,10 +218,10 @@ const Customers = () => {
           <p className="text-slate-600 dark:text-slate-400">Manage your customer relationships</p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
-          <button className="inline-flex items-center px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 dark:text-white transition-colors">
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </button>
+          <ExportMenu
+            onExportCSV={() => exportCustomersToCSV(filteredCustomers)}
+            onExportExcel={() => exportCustomersToExcel(filteredCustomers)}
+          />
           <button 
             onClick={() => {
               setSelectedCustomer(null);

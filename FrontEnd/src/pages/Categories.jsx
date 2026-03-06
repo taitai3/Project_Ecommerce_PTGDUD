@@ -11,7 +11,9 @@ import {
 } from 'lucide-react';
 import categoryService from '../services/categoryService';
 import CategoryModal from '../components/CategoryModal';
+import ExportMenu from '../components/ExportMenu';
 import Toast from '../components/Toast';
+import { exportCategoriesToCSV, exportCategoriesToExcel } from '../utils/exportUtils';
 
 const Categories = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -100,7 +102,11 @@ const Categories = () => {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Categories</h1>
           <p className="text-slate-600 dark:text-slate-400">Manage product categories</p>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="mt-4 sm:mt-0 flex space-x-3">
+          <ExportMenu
+            onExportCSV={() => exportCategoriesToCSV(filteredCategories)}
+            onExportExcel={() => exportCategoriesToExcel(filteredCategories)}
+          />
           <button 
             onClick={() => {
               setSelectedCategory(null);
