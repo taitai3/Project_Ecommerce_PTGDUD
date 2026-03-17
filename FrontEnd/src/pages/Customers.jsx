@@ -18,9 +18,11 @@ import CustomerDetailModal from '../components/CustomerDetailModal';
 import ExportMenu from '../components/ExportMenu';
 import Toast from '../components/Toast';
 import { exportCustomersToCSV, exportCustomersToExcel } from '../utils/exportUtils';
+import useDebounce from '../hooks/useDebounce';
 
 const Customers = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500); // Debounce search with 500ms delay
   const [statusFilter, setStatusFilter] = useState('all');
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -192,9 +194,9 @@ const Customers = () => {
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = 
-      customer.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
+      customer.username?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+      customer.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+      customer.fullName?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'Active' && customer.active) ||
       (statusFilter === 'Inactive' && !customer.active);
@@ -301,6 +303,11 @@ const Customers = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
+            {searchTerm !== debouncedSearchTerm && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-4">
             <select
