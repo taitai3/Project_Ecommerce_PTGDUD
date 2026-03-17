@@ -13,8 +13,11 @@ import {
 } from 'lucide-react';
 import productService from '../services/productService';
 import categoryService from '../services/categoryService';
+import ProductModal from '../components/ProductModal';
+import ExportMenu from '../components/ExportMenu';
 import Toast from '../components/Toast';
 import useDebounce from '../hooks/useDebounce';
+import { exportProductsToCSV, exportProductsToExcel } from '../utils/exportUtils';
 
 const Products = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,6 +32,8 @@ const Products = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const pageSize = 12;
 
@@ -87,6 +92,31 @@ const Products = () => {
     }
   };
 
+  const handleEdit = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveProduct = async (id, data) => {
+    try {
+      if (id) {
+        await productService.updateProduct(id, data);
+        setToast({ message: 'Product updated successfully!', type: 'success' });
+      } else {
+        await productService.createProduct(data);
+        setToast({ message: 'Product created successfully!', type: 'success' });
+      }
+      setIsModalOpen(false);
+      fetchProducts();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setToast({ 
+        message: error.response?.data?.message || 'Failed to save product', 
+        type: 'error' 
+      });
+    }
+  };
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -133,11 +163,15 @@ const Products = () => {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Products</h1>
           <p className="text-slate-600 dark:text-slate-400">Manage your product inventory</p>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="mt-4 sm:mt-0 flex space-x-3">
+          <ExportMenu
+            onExportCSV={() => exportProductsToCSV(filteredProducts)}
+            onExportExcel={() => exportProductsToExcel(filteredProducts)}
+          />
           <button 
             onClick={() => {
-              // Will implement in part 2
-              setToast({ message: 'Add product feature coming in part 2!', type: 'warning' });
+              setSelectedProduct(null);
+              setIsModalOpen(true);
             }}
             className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
@@ -326,10 +360,7 @@ const Products = () => {
                 {/* Actions */}
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => {
-                      // Will implement in part 2
-                      setToast({ message: 'Edit feature coming in part 2!', type: 'warning' });
-                    }}
+                    onClick={() => handleEdit(product)}
                     className="flex-1 px-3 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center justify-center"
                   >
                     <Edit className="w-4 h-4 mr-1" />
@@ -402,6 +433,15 @@ const Products = () => {
           </div>
         </div>
       )}
+
+      {/* Product Modal */}
+      <ProductModal
+        product={selectedProduct}
+        categories={categories}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveProduct}
+      />
 
       {/* Toast Notification */}
       {toast && (

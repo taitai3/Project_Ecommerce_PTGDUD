@@ -171,3 +171,53 @@ export const exportCategoriesToExcel = (categories) => {
   const timestamp = new Date().toISOString().split('T')[0];
   exportToExcel(formattedData, `categories_${timestamp}.xls`);
 };
+
+// Export products to CSV
+export const exportProductsToCSV = (products) => {
+  if (!products || products.length === 0) {
+    console.warn('No products to export');
+    return;
+  }
+
+  const formattedData = products.map(product => ({
+    'ID': product.id,
+    'Name': product.name,
+    'Brand': product.brand || 'N/A',
+    'Model': product.model || 'N/A',
+    'Category': product.categoryName || 'N/A',
+    'Price (VND)': product.price,
+    'Stock Quantity': product.stockQuantity,
+    'Description': product.description || 'N/A',
+    'Specifications': product.specifications || 'N/A',
+    'Status': product.isActive ? 'Active' : 'Inactive',
+    'Created At': new Date(product.createdAt).toLocaleDateString(),
+  }));
+
+  const timestamp = new Date().toISOString().split('T')[0];
+  exportToCSV(formattedData, `products_${timestamp}.csv`);
+};
+
+// Export products to Excel
+export const exportProductsToExcel = (products) => {
+  if (!products || products.length === 0) {
+    console.warn('No products to export');
+    return;
+  }
+
+  const formattedData = products.map(product => ({
+    'ID': product.id,
+    'Name': product.name,
+    'Brand': product.brand || 'N/A',
+    'Model': product.model || 'N/A',
+    'Category': product.categoryName || 'N/A',
+    'Price (VND)': product.price,
+    'Stock Quantity': product.stockQuantity,
+    'Description': product.description || 'N/A',
+    'Specifications': product.specifications || 'N/A',
+    'Status': product.isActive ? 'Active' : 'Inactive',
+    'Created At': new Date(product.createdAt).toLocaleDateString(),
+  }));
+
+  const timestamp = new Date().toISOString().split('T')[0];
+  exportToExcel(formattedData, `products_${timestamp}.xls`);
+};
