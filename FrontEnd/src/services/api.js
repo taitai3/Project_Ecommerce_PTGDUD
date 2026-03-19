@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config/env';
+import { getToken, getRefreshToken, setTokens, logout } from '../utils/auth';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +12,7 @@ const api = axios.create({
 // Request interceptor to add token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -33,23 +34,21 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = getRefreshToken();
         if (refreshToken) {
           const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
             refreshToken,
           });
 
           const { token } = response.data;
-          localStorage.setItem('token', token);
+          setTokens(token, refreshToken);
 
           originalRequest.headers.Authorization = `Bearer ${token}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
         // Refresh failed, logout user
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        logout();
         return Promise.reject(refreshError);
       }
     }

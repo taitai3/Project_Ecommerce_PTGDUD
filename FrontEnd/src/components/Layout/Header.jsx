@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Bell,
   Search,
@@ -10,11 +10,36 @@ import {
   Menu,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { logout } from '../../utils/auth';
 
 const Header = ({ onMobileMenuToggle }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const { isDark, toggleTheme } = useTheme();
+  const userMenuRef = useRef(null);
+  const notificationRef = useRef(null);
+
+  const handleLogout = () => {
+    setShowUserMenu(false); // Close menu before logout
+    logout();
+  };
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const notifications = [
     { id: 1, title: 'New order received', time: '2 min ago', unread: true },
@@ -59,7 +84,7 @@ const Header = ({ onMobileMenuToggle }) => {
           </button>
 
           {/* Notifications */}
-          <div className="relative">
+          <div className="relative" ref={notificationRef}>
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors relative"
@@ -107,7 +132,7 @@ const Header = ({ onMobileMenuToggle }) => {
           </div>
 
           {/* User menu */}
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -133,7 +158,10 @@ const Header = ({ onMobileMenuToggle }) => {
                     <span>Settings</span>
                   </button>
                   <hr className="my-2 border-slate-200 dark:border-slate-700" />
-                  <button className="flex items-center space-x-2 w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md">
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center space-x-2 w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md"
+                  >
                     <LogOut className="w-4 h-4" />
                     <span>Sign out</span>
                   </button>

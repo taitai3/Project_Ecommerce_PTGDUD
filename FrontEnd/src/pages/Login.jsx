@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/env';
+import { setTokens } from '../utils/auth';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -24,9 +25,8 @@ const Login = () => {
 
       const { token, refreshToken } = response.data;
       
-      // Save tokens
-      localStorage.setItem('token', token);
-      localStorage.setItem('refreshToken', refreshToken);
+      // Save tokens using auth utility
+      setTokens(token, refreshToken);
       
       // Redirect to dashboard
       navigate('/');
