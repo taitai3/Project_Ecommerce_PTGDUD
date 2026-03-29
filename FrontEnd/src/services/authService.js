@@ -9,7 +9,13 @@ export const authService = {
 
   // Update user profile
   updateProfile: async (profileData) => {
-    const response = await api.put('/users/profile', profileData);
+    const response = await api.put('/auth/profile', profileData);
+    return response.data;
+  },
+
+  // Change password
+  changePassword: async (passwordData) => {
+    const response = await api.post('/auth/change-password', passwordData);
     return response.data;
   },
 

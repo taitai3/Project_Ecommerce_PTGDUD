@@ -194,4 +194,45 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error);
         }
     }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        Map<String, String> response = new HashMap<>();
+        
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User user = (User) authentication.getPrincipal();
+            
+            // Verify current password
+            if (!encoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                response.put("message", "Current password is incorrect");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Verify new password and confirm password match
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                response.put("message", "New password and confirm password do not match");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Validate password strength (at least 6 characters)
+            if (request.getNewPassword().length() < 6) {
+                response.put("message", "Password must be at least 6 characters long");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Update password
+            user.setPassword(encoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            
+            // Delete all refresh tokens to force re-login on other devices
+            refreshTokenService.deleteByUser(user);
+            
+            response.put("message", "Password changed successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("message", "Error changing password: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }

@@ -20,8 +20,11 @@ import { useTheme } from '../context/ThemeContext';
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const [toast, setToast] = useState(null);
   const { isDark } = useTheme();
   
@@ -33,6 +36,13 @@ const Settings = () => {
     phoneNumber: '',
     address: '',
     role: ''
+  });
+
+  // Password data
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
   const [notifications, setNotifications] = useState({
@@ -96,6 +106,68 @@ const Settings = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePasswordChange = (field, value) => {
+    setPasswordData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleChangePassword = async () => {
+    // Validation
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      setToast({
+        type: 'error',
+        message: 'All password fields are required'
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setToast({
+        type: 'error',
+        message: 'New password and confirm password do not match'
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setToast({
+        type: 'error',
+        message: 'Password must be at least 6 characters long'
+      });
+      return;
+    }
+
+    try {
+      setPasswordLoading(true);
+      await authService.changePassword(passwordData);
+      setToast({
+        type: 'success',
+        message: 'Password changed successfully! Please login again.'
+      });
+      
+      // Clear password fields
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+    } catch (error) {
+      setToast({
+        type: 'error',
+        message: error.response?.data?.message || 'Failed to change password'
+      });
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -352,15 +424,135 @@ const Settings = () => {
               </div>
             )}
 
-            {/* Security Tab - Will be implemented in Part 2 */}
+            {/* Security Tab */}
             {activeTab === 'security' && (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Security Settings</h2>
+                  <button 
+                    onClick={handleChangePassword}
+                    disabled={passwordLoading}
+                    className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {passwordLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Update Password
+                      </>
+                    )}
+                  </button>
                 </div>
-                <div className="text-center py-12">
-                  <Shield className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-                  <p className="text-slate-600 dark:text-slate-400">Change password feature coming in Part 2</p>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Current Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={passwordData.currentPassword}
+                        onChange={(e) => handlePasswordChange('currentPassword', e.target.value)}
+                        className="w-full px-3 py-2 pr-10 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="Enter current password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        value={passwordData.newPassword}
+                        onChange={(e) => handlePasswordChange('newPassword', e.target.value)}
+                        className="w-full px-3 py-2 pr-10 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="Enter new password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showNewPassword ? (
+                          <EyeOff className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Confirm New Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => handlePasswordChange('confirmPassword', e.target.value)}
+                        className="w-full px-3 py-2 pr-10 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        placeholder="Confirm new password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        ) : (
+                          <Eye className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
+                    <h3 className="font-medium text-slate-900 dark:text-white mb-2">Password Requirements</h3>
+                    <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
+                      <li className={passwordData.newPassword.length >= 6 ? 'text-green-600 dark:text-green-400' : ''}>
+                        • At least 6 characters long
+                      </li>
+                      <li className={passwordData.newPassword === passwordData.confirmPassword && passwordData.newPassword ? 'text-green-600 dark:text-green-400' : ''}>
+                        • New password and confirm password must match
+                      </li>
+                      <li className={passwordData.currentPassword ? 'text-green-600 dark:text-green-400' : ''}>
+                        • Current password is required
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <Shield className="w-5 h-5 text-yellow-600 dark:text-yellow-500 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-yellow-900 dark:text-yellow-200">Security Notice</h4>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
+                          After changing your password, you will be logged out and need to sign in again with your new password.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
