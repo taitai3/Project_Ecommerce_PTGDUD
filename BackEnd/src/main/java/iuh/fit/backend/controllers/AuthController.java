@@ -1,6 +1,7 @@
 package iuh.fit.backend.controllers;
 
 import iuh.fit.backend.dto.auth.*;
+import iuh.fit.backend.dto.user.UpdateUserRequest;
 import iuh.fit.backend.entities.RefreshToken;
 import iuh.fit.backend.entities.User;
 import iuh.fit.backend.enums.Role;
@@ -117,6 +118,47 @@ public class AuthController {
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
             error.put("message", "Error retrieving user profile");
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@Valid @RequestBody UpdateUserRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            User user = (User) authentication.getPrincipal();
+
+            // Update user fields
+            if (request.getEmail() != null) {
+                user.setEmail(request.getEmail());
+            }
+            if (request.getFullName() != null) {
+                user.setFullName(request.getFullName());
+            }
+            if (request.getPhone() != null) {
+                user.setPhoneNumber(request.getPhone());
+            }
+            if (request.getAddress() != null) {
+                user.setAddress(request.getAddress());
+            }
+
+            userRepository.save(user);
+
+            UserProfileResponse profile = new UserProfileResponse(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getFullName(),
+                    user.getPhoneNumber(),
+                    user.getAddress(),
+                    user.getRole().name(),
+                    user.getCreatedAt()
+            );
+
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Error updating user profile");
             return ResponseEntity.badRequest().body(error);
         }
     }

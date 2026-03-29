@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Save,
   User,
@@ -11,17 +11,93 @@ import {
   Smartphone,
   Eye,
   EyeOff,
+  Loader2,
 } from 'lucide-react';
+import { authService } from '../services/authService';
+import Toast from '../components/Toast';
+import { useTheme } from '../context/ThemeContext';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [toast, setToast] = useState(null);
+  const { isDark } = useTheme();
+  
+  // Profile data
+  const [profile, setProfile] = useState({
+    username: '',
+    email: '',
+    fullName: '',
+    phoneNumber: '',
+    address: '',
+    role: ''
+  });
+
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
     sms: true,
     marketing: false,
   });
+
+  // Load user profile on mount
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      setProfileLoading(true);
+      const data = await authService.getProfile();
+      setProfile({
+        username: data.username || '',
+        email: data.email || '',
+        fullName: data.fullName || '',
+        phoneNumber: data.phoneNumber || '',
+        address: data.address || '',
+        role: data.role || ''
+      });
+    } catch (error) {
+      setToast({
+        type: 'error',
+        message: 'Failed to load profile: ' + (error.response?.data?.message || error.message)
+      });
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const handleProfileChange = (field, value) => {
+    setProfile(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setLoading(true);
+      await authService.updateProfile({
+        email: profile.email,
+        fullName: profile.fullName,
+        phone: profile.phoneNumber,
+        address: profile.address
+      });
+      setToast({
+        type: 'success',
+        message: 'Profile updated successfully!'
+      });
+    } catch (error) {
+      setToast({
+        type: 'error',
+        message: 'Failed to update profile: ' + (error.response?.data?.message || error.message)
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
@@ -40,24 +116,32 @@ const Settings = () => {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-        <p className="text-slate-600">Manage your account settings and preferences</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h1>
+        <p className="text-slate-600 dark:text-slate-400">Manage your account settings and preferences</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
         <div className="lg:w-64">
-          <nav className="bg-white rounded-lg border border-slate-200 p-2">
+          <nav className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-2">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
                   activeTab === tab.id
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <tab.icon className="w-5 h-5" />
@@ -69,85 +153,111 @@ const Settings = () => {
 
         {/* Content */}
         <div className="flex-1">
-          <div className="bg-white rounded-lg border border-slate-200">
+          <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-slate-900">Profile Information</h2>
-                  <button className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Profile Information</h2>
+                  <button 
+                    onClick={handleSaveProfile}
+                    disabled={loading || profileLoading}
+                    className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
                   </button>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="flex items-center space-x-6">
-                    <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center">
-                      <User className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <button className="px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                        Change Avatar
-                      </button>
-                      <p className="text-sm text-slate-500 mt-1">JPG, GIF or PNG. 1MB max.</p>
-                    </div>
+                {profileLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
                   </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center space-x-6">
+                      <div className="w-20 h-20 bg-primary-600 rounded-full flex items-center justify-center">
+                        <User className="w-8 h-8 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-slate-900 dark:text-white mb-1">
+                          {profile.username}
+                        </div>
+                        <div className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400">
+                          {profile.role}
+                        </div>
+                      </div>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        defaultValue="Admin"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                          Username (Read-only)
+                        </label>
+                        <input
+                          type="text"
+                          value={profile.username}
+                          disabled
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          value={profile.email}
+                          onChange={(e) => handleProfileChange('email', e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={profile.fullName}
+                          onChange={(e) => handleProfileChange('fullName', e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          value={profile.phoneNumber}
+                          onChange={(e) => handleProfileChange('phoneNumber', e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        defaultValue="User"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        defaultValue="admin@example.com"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        defaultValue="+1 (555) 123-4567"
-                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Bio
-                    </label>
-                    <textarea
-                      rows={4}
-                      defaultValue="System administrator with 5+ years of experience in e-commerce platforms."
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Address
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={profile.address}
+                        onChange={(e) => handleProfileChange('address', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -155,7 +265,7 @@ const Settings = () => {
             {activeTab === 'notifications' && (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-slate-900">Notification Preferences</h2>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Notification Preferences</h2>
                   <button className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
                     <Save className="w-4 h-4 mr-2" />
                     Save Changes
@@ -163,12 +273,12 @@ const Settings = () => {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between py-4 border-b border-slate-200">
+                  <div className="flex items-center justify-between py-4 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center space-x-3">
-                      <Mail className="w-5 h-5 text-slate-400" />
+                      <Mail className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                       <div>
-                        <h3 className="font-medium text-slate-900">Email Notifications</h3>
-                        <p className="text-sm text-slate-500">Receive notifications via email</p>
+                        <h3 className="font-medium text-slate-900 dark:text-white">Email Notifications</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Receive notifications via email</p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -178,16 +288,16 @@ const Settings = () => {
                         onChange={() => handleNotificationChange('email')}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                     </label>
                   </div>
 
-                  <div className="flex items-center justify-between py-4 border-b border-slate-200">
+                  <div className="flex items-center justify-between py-4 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center space-x-3">
-                      <Bell className="w-5 h-5 text-slate-400" />
+                      <Bell className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                       <div>
-                        <h3 className="font-medium text-slate-900">Push Notifications</h3>
-                        <p className="text-sm text-slate-500">Receive push notifications in browser</p>
+                        <h3 className="font-medium text-slate-900 dark:text-white">Push Notifications</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Receive push notifications in browser</p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -197,16 +307,16 @@ const Settings = () => {
                         onChange={() => handleNotificationChange('push')}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                     </label>
                   </div>
 
-                  <div className="flex items-center justify-between py-4 border-b border-slate-200">
+                  <div className="flex items-center justify-between py-4 border-b border-slate-200 dark:border-slate-700">
                     <div className="flex items-center space-x-3">
-                      <Smartphone className="w-5 h-5 text-slate-400" />
+                      <Smartphone className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                       <div>
-                        <h3 className="font-medium text-slate-900">SMS Notifications</h3>
-                        <p className="text-sm text-slate-500">Receive notifications via SMS</p>
+                        <h3 className="font-medium text-slate-900 dark:text-white">SMS Notifications</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Receive notifications via SMS</p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -216,16 +326,16 @@ const Settings = () => {
                         onChange={() => handleNotificationChange('sms')}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                     </label>
                   </div>
 
                   <div className="flex items-center justify-between py-4">
                     <div className="flex items-center space-x-3">
-                      <Globe className="w-5 h-5 text-slate-400" />
+                      <Globe className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                       <div>
-                        <h3 className="font-medium text-slate-900">Marketing Communications</h3>
-                        <p className="text-sm text-slate-500">Receive marketing emails and updates</p>
+                        <h3 className="font-medium text-slate-900 dark:text-white">Marketing Communications</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">Receive marketing emails and updates</p>
                       </div>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -235,96 +345,53 @@ const Settings = () => {
                         onChange={() => handleNotificationChange('marketing')}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                      <div className="w-11 h-6 bg-slate-200 dark:bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
                     </label>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Security Tab */}
+            {/* Security Tab - Will be implemented in Part 2 */}
             {activeTab === 'security' && (
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-slate-900">Security Settings</h2>
-                  <button className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-                    <Save className="w-4 h-4 mr-2" />
-                    Update Password
-                  </button>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Security Settings</h2>
                 </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Current Password
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        className="w-full px-3 py-2 pr-10 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="w-4 h-4 text-slate-400" />
-                        ) : (
-                          <Eye className="w-4 h-4 text-slate-400" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      New Password
-                    </label>
-                    <input
-                      type="password"
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Confirm New Password
-                    </label>
-                    <input
-                      type="password"
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div className="bg-slate-50 rounded-lg p-4">
-                    <h3 className="font-medium text-slate-900 mb-2">Password Requirements</h3>
-                    <ul className="text-sm text-slate-600 space-y-1">
-                      <li>• At least 8 characters long</li>
-                      <li>• Contains at least one uppercase letter</li>
-                      <li>• Contains at least one lowercase letter</li>
-                      <li>• Contains at least one number</li>
-                      <li>• Contains at least one special character</li>
-                    </ul>
-                  </div>
+                <div className="text-center py-12">
+                  <Shield className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-600 dark:text-slate-400">Change password feature coming in Part 2</p>
                 </div>
               </div>
             )}
 
-            {/* Other tabs would be implemented similarly */}
+            {/* Appearance Tab */}
             {activeTab === 'appearance' && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold text-slate-900 mb-6">Appearance Settings</h2>
-                <p className="text-slate-600">Customize the look and feel of your dashboard.</p>
-                {/* Appearance settings content */}
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Appearance Settings</h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between py-4 border-b border-slate-200 dark:border-slate-700">
+                    <div>
+                      <h3 className="font-medium text-slate-900 dark:text-white">Dark Mode</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">Toggle dark mode theme</p>
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      Use the toggle in the header
+                    </div>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400">More appearance options coming soon.</p>
+                </div>
               </div>
             )}
 
+            {/* Billing Tab */}
             {activeTab === 'billing' && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold text-slate-900 mb-6">Billing Information</h2>
-                <p className="text-slate-600">Manage your subscription and payment methods.</p>
-                {/* Billing settings content */}
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Billing Information</h2>
+                <div className="text-center py-12">
+                  <CreditCard className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                  <p className="text-slate-600 dark:text-slate-400">Billing features coming soon.</p>
+                </div>
               </div>
             )}
           </div>
