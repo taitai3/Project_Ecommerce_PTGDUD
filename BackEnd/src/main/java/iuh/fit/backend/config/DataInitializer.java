@@ -12,7 +12,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.Statement;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -29,8 +32,14 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private DataSource dataSource;
+
     @Override
     public void run(String... args) throws Exception {
+        // Fix database schema first
+        fixDatabaseSchema();
+        
         // Create default admin user if not exists
         if (!userRepository.existsByUsername("admin")) {
             User admin = new User();
@@ -66,6 +75,24 @@ public class DataInitializer implements CommandLineRunner {
 
         // Create sample products
         createSampleProducts();
+    }
+
+    private void fixDatabaseSchema() {
+        try (Connection connection = dataSource.getConnection();
+             Statement statement = connection.createStatement()) {
+            
+            // Fix categories table
+            statement.executeUpdate("ALTER TABLE categories MODIFY COLUMN image_url VARCHAR(1000)");
+            System.out.println("Fixed categories.image_url column length to 1000");
+            
+            // Fix products table
+            statement.executeUpdate("ALTER TABLE products MODIFY COLUMN image_url VARCHAR(1000)");
+            System.out.println("Fixed products.image_url column length to 1000");
+            
+        } catch (Exception e) {
+            System.err.println("Failed to fix database schema: " + e.getMessage());
+            // Continue anyway - might already be fixed
+        }
     }
 
     private void createSampleCategories() {

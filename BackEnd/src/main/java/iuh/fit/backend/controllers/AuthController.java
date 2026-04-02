@@ -235,4 +235,25 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping("/debug")
+    public ResponseEntity<?> debugAuth() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null) {
+                return ResponseEntity.ok(Map.of("message", "No authentication"));
+            }
+            
+            User user = (User) authentication.getPrincipal();
+            Map<String, Object> debug = new HashMap<>();
+            debug.put("username", user.getUsername());
+            debug.put("role", user.getRole().name());
+            debug.put("authorities", user.getAuthorities().toString());
+            debug.put("isAdmin", user.getRole() == Role.ADMIN);
+            
+            return ResponseEntity.ok(debug);
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("error", e.getMessage()));
+        }
+    }
 }

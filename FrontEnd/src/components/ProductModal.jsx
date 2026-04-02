@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Package, DollarSign, Image, Tag, FileText } from 'lucide-react';
+import ImageUpload from './ImageUpload';
 
 const ProductModal = ({ product, categories, isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -266,48 +267,12 @@ const ProductModal = ({ product, categories, isOpen, onClose, onSave }) => {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Image URL
+                    Product Image
                   </label>
-                  <input
-                    type="url"
-                    name="imageUrl"
+                  <ImageUpload
                     value={formData.imageUrl}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="https://example.com/product-image.jpg"
+                    onChange={(imageUrl) => setFormData(prev => ({ ...prev, imageUrl }))}
                   />
-                </div>
-
-                {/* Image Preview */}
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4">
-                  <div className="text-center">
-                    {imagePreview ? (
-                      <div className="space-y-2">
-                        <img
-                          src={imagePreview}
-                          alt="Product preview"
-                          className="mx-auto max-w-full h-48 object-contain rounded-lg"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextElementSibling.style.display = 'block';
-                          }}
-                        />
-                        <div className="hidden text-red-500 text-sm">
-                          Failed to load image
-                        </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Image Preview
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="py-8">
-                        <Image className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-2" />
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                          No image URL provided
-                        </p>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>

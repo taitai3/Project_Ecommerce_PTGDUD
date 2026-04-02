@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.Arrays;
 
@@ -65,23 +66,18 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
                 // Public endpoints
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/products/**").permitAll()
-                .requestMatchers("/api/products/**").permitAll()
-                .requestMatchers("/categories/**").permitAll()
-                .requestMatchers("/api/categories/**").permitAll()
+                .requestMatchers(SecurityEndpoints.PUBLIC_ENDPOINTS).permitAll()
                 
-                // User endpoints
-                .requestMatchers("/cart/**").hasRole("USER")
-                .requestMatchers("/api/cart/**").hasRole("USER")
-                .requestMatchers("/orders/user/**").hasRole("USER")
-                .requestMatchers("/orders").hasRole("USER")
+                // Admin CRUD operations (chỉ POST/PUT/DELETE cần ADMIN)
+                .requestMatchers(HttpMethod.POST, SecurityEndpoints.ADMIN_POST_ENDPOINTS).hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, SecurityEndpoints.ADMIN_PUT_ENDPOINTS).hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, SecurityEndpoints.ADMIN_DELETE_ENDPOINTS).hasRole("ADMIN")
                 
                 // Admin endpoints
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/users/**").hasRole("ADMIN")
-                .requestMatchers("/orders/admin/**").hasRole("ADMIN")
+                .requestMatchers(SecurityEndpoints.ADMIN_ENDPOINTS).hasRole("ADMIN")
+                
+                // User endpoints
+                .requestMatchers(SecurityEndpoints.USER_ENDPOINTS).hasRole("USER")
                 
                 // Any other request needs authentication
                 .anyRequest().authenticated()

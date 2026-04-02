@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, Save, Tag, FileText, Image } from 'lucide-react';
+import { X, Save, Tag } from 'lucide-react';
+import ImageUpload from './ImageUpload';
 
 const CategoryModal = ({ category, isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -103,29 +104,12 @@ const CategoryModal = ({ category, isOpen, onClose, onSave }) => {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Image URL
+                Category Image
               </label>
-              <input
-                type="url"
-                name="imageUrl"
+              <ImageUpload
                 value={formData.imageUrl}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                placeholder="https://example.com/image.jpg"
+                onChange={(imageUrl) => setFormData(prev => ({ ...prev, imageUrl }))}
               />
-              {formData.imageUrl && (
-                <div className="mt-3">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Preview:</p>
-                  <img
-                    src={formData.imageUrl}
-                    alt="Category preview"
-                    className="w-32 h-32 object-cover rounded-lg border border-slate-200 dark:border-slate-600"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
             </div>
           </div>
 

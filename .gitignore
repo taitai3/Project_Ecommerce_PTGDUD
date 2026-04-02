@@ -5,3 +5,15 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# Sensitive configuration files
+BackEnd/src/main/resources/application.properties
+BackEnd/src/main/resources/application-*.properties
+
+# Build outputs
+BackEnd/target/
+FrontEnd/dist/
+FrontEnd/node_modules/
+
+# Logs
+*.log
