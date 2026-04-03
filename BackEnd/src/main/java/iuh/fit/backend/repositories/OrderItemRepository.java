@@ -1,6 +1,8 @@
 package iuh.fit.backend.repositories;
 
+import iuh.fit.backend.entities.Order;
 import iuh.fit.backend.entities.OrderItem;
+import iuh.fit.backend.entities.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,13 +13,29 @@ import java.util.List;
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     
-    List<OrderItem> findByOrderId(Long orderId);
+    // Find order items by order
+    List<OrderItem> findByOrderOrderByCreatedAtDesc(Order order);
     
-    List<OrderItem> findByProductId(Long productId);
+    // Find order items by product
+    List<OrderItem> findByProduct(Product product);
     
-    @Query("SELECT oi FROM OrderItem oi WHERE oi.order.user.id = :userId")
-    List<OrderItem> findByUserId(@Param("userId") Long userId);
+    // Find order items by order ID
+    List<OrderItem> findByOrderIdOrderByCreatedAtDesc(Long orderId);
     
-    @Query("SELECT SUM(oi.quantity) FROM OrderItem oi WHERE oi.product.id = :productId")
+    // Get total quantity sold for a product
+    @Query("SELECT COALESCE(SUM(oi.quantity), 0) FROM OrderItem oi WHERE oi.product.id = :productId")
     Long getTotalQuantitySoldByProduct(@Param("productId") Long productId);
+    
+    // Get best selling products
+    @Query("SELECT oi.product, SUM(oi.quantity) as totalSold FROM OrderItem oi " +
+           "GROUP BY oi.product ORDER BY totalSold DESC")
+    List<Object[]> getBestSellingProducts();
+    
+    // Get revenue by product
+    @Query("SELECT oi.product, SUM(oi.totalPrice) as totalRevenue FROM OrderItem oi " +
+           "GROUP BY oi.product ORDER BY totalRevenue DESC")
+    List<Object[]> getRevenueByProduct();
+    
+    // Count items in order
+    long countByOrder(Order order);
 }

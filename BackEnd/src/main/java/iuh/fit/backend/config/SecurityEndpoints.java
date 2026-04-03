@@ -24,7 +24,8 @@ public class SecurityEndpoints {
         "/admin/**",
         "/api/users/**",
         "/api/upload/**",      // File upload
-        "/orders/admin/**"
+        "/api/orders/stats",   // Order statistics
+        "/api/orders/user/**"  // View orders by user ID
     };
     
     // Admin POST endpoints - create operations
@@ -36,7 +37,8 @@ public class SecurityEndpoints {
     // Admin PUT endpoints - update operations  
     public static final String[] ADMIN_PUT_ENDPOINTS = {
         "/api/categories/**",
-        "/api/products/**"
+        "/api/products/**",
+        "/api/orders/*/status" // Update order status
     };
     
     // Admin DELETE endpoints - delete operations
@@ -45,10 +47,9 @@ public class SecurityEndpoints {
         "/api/products/**"
     };
     
-    // User endpoints - authenticated users
+    // User endpoints - authenticated users (both USER and ADMIN roles)
     public static final String[] USER_ENDPOINTS = {
         "/api/cart/**",
-        "/orders/user/**",
-        "/orders"
+        "/api/orders/**"       // All order operations for authenticated users
     };
 }
