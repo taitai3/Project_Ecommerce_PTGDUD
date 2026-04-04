@@ -221,3 +221,62 @@ export const exportProductsToExcel = (products) => {
   const timestamp = new Date().toISOString().split('T')[0];
   exportToExcel(formattedData, `products_${timestamp}.xls`);
 };
+
+// Export orders to CSV
+export const exportOrdersToCSV = (orders) => {
+  if (!orders || orders.length === 0) {
+    console.warn('No orders to export');
+    return;
+  }
+
+  const formattedData = orders.map(order => ({
+    'Mã đơn hàng': order.orderNumber,
+    'Khách hàng': order.username,
+    'Email': order.userEmail,
+    'Số điện thoại': order.phoneNumber,
+    'Tổng tiền (VND)': order.totalAmount,
+    'Trạng thái': getOrderStatusText(order.status),
+    'Địa chỉ giao hàng': order.shippingAddress || 'N/A',
+    'Ngày tạo': new Date(order.createdAt).toLocaleDateString('vi-VN'),
+    'Ghi chú': order.notes || 'N/A'
+  }));
+
+  const timestamp = new Date().toISOString().split('T')[0];
+  exportToCSV(formattedData, `orders_${timestamp}.csv`);
+};
+
+// Export orders to Excel
+export const exportOrdersToExcel = (orders) => {
+  if (!orders || orders.length === 0) {
+    console.warn('No orders to export');
+    return;
+  }
+
+  const formattedData = orders.map(order => ({
+    'Mã đơn hàng': order.orderNumber,
+    'Khách hàng': order.username,
+    'Email': order.userEmail,
+    'Số điện thoại': order.phoneNumber,
+    'Tổng tiền (VND)': order.totalAmount,
+    'Trạng thái': getOrderStatusText(order.status),
+    'Địa chỉ giao hàng': order.shippingAddress || 'N/A',
+    'Ngày tạo': new Date(order.createdAt).toLocaleDateString('vi-VN'),
+    'Ghi chú': order.notes || 'N/A'
+  }));
+
+  const timestamp = new Date().toISOString().split('T')[0];
+  exportToExcel(formattedData, `orders_${timestamp}.xls`);
+};
+
+// Helper function to get order status text in Vietnamese
+const getOrderStatusText = (status) => {
+  const statusMap = {
+    'PENDING': 'Chờ xác nhận',
+    'CONFIRMED': 'Đã xác nhận',
+    'PROCESSING': 'Đang xử lý',
+    'SHIPPED': 'Đã giao vận',
+    'DELIVERED': 'Đã giao hàng',
+    'CANCELLED': 'Đã hủy'
+  };
+  return statusMap[status] || status;
+};

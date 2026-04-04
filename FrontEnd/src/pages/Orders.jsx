@@ -13,8 +13,12 @@ import {
 } from 'lucide-react';
 import orderService from '../services/orderService';
 import OrderStatusBadge from '../components/OrderStatusBadge';
+import OrderDetailModal from '../components/OrderDetailModal';
+import OrderActions from '../components/OrderActions';
 import Toast from '../components/Toast';
+import ExportMenu from '../components/ExportMenu';
 import { useDebounce } from '../hooks/useDebounce';
+import { exportOrdersToCSV, exportOrdersToExcel } from '../utils/exportUtils';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -39,6 +43,10 @@ const Orders = () => {
     processingOrders: 0,
     deliveredOrders: 0
   });
+
+  // Modal states
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Load orders
   const loadOrders = async (page = 0) => {
@@ -104,6 +112,62 @@ const Orders = () => {
     });
   };
 
+  // Modal handlers
+  const handleViewDetails = (orderId) => {
+    setSelectedOrderId(orderId);
+    setShowDetailModal(true);
+  };
+
+  const handleUpdateStatus = async (orderId, status) => {
+    try {
+      const response = await orderService.updateOrderStatus(orderId, status);
+      if (response.success) {
+        setToast({ message: 'Cập nhật trạng thái thành công', type: 'success' });
+        loadOrders(currentPage); // Reload current page
+        loadStats(); // Reload stats
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setToast({ message: 'Lỗi khi cập nhật trạng thái', type: 'error' });
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
+
+    try {
+      const response = await orderService.cancelOrder(orderId);
+      if (response.success) {
+        setToast({ message: 'Hủy đơn hàng thành công', type: 'success' });
+        loadOrders(currentPage); // Reload current page
+        loadStats(); // Reload stats
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      setToast({ message: 'Lỗi khi hủy đơn hàng', type: 'error' });
+    }
+  };
+
+  const handleExportOrders = async (format) => {
+    try {
+      // Get all orders for export (without pagination)
+      const response = await orderService.getAllOrders(0, 1000, statusFilter, debouncedSearchTerm);
+      if (response.success && response.data.length > 0) {
+        if (format === 'csv') {
+          exportOrdersToCSV(response.data);
+        } else if (format === 'excel') {
+          exportOrdersToExcel(response.data);
+        }
+        setToast({ message: `Xuất ${format.toUpperCase()} thành công`, type: 'success' });
+      } else {
+        setToast({ message: 'Không có dữ liệu để xuất', type: 'warning' });
+      }
+    } catch (error) {
+      console.error('Error exporting orders:', error);
+      setToast({ message: 'Lỗi khi xuất dữ liệu', type: 'error' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -112,10 +176,7 @@ const Orders = () => {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Quản lý đơn hàng</h1>
           <p className="text-slate-600 dark:text-slate-400">Theo dõi và quản lý tất cả đơn hàng</p>
         </div>
-        <button className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
-          <Download className="w-4 h-4 mr-2" />
-          Xuất danh sách
-        </button>
+        <ExportMenu onExport={handleExportOrders} />
       </div>
 
       {/* Stats Cards */}
@@ -279,14 +340,18 @@ const Orders = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">
                         <button 
+                          onClick={() => handleViewDetails(order.id)}
                           className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                           title="Xem chi tiết"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </button>
+                        <OrderActions
+                          order={order}
+                          onViewDetails={handleViewDetails}
+                          onUpdateStatus={handleUpdateStatus}
+                          onCancel={handleCancelOrder}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -342,6 +407,13 @@ const Orders = () => {
           </div>
         </div>
       )}
+
+      {/* Order Detail Modal */}
+      <OrderDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        orderId={selectedOrderId}
+      />
 
       {/* Toast */}
       {toast && (
