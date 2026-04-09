@@ -118,6 +118,10 @@ public class ProductService {
         return productRepository.findAllActiveBrands();
     }
 
+    public long getTotalProductCount() {
+        return productRepository.count();
+    }
+
     private ProductResponse convertToResponse(Product product) {
         ProductResponse response = new ProductResponse();
         response.setId(product.getId());
