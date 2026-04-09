@@ -58,6 +58,12 @@ const productService = {
     const response = await api.delete(`/products/${id}`);
     return response.data;
   },
+
+  // Get product count (Admin only)
+  getProductCount: async () => {
+    const response = await api.get("/products/stats");
+    return response.data;
+  },
 };
 
 export default productService;
