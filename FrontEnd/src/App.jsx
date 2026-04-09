@@ -10,6 +10,7 @@ import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import Home from './pages/customer/Home';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -25,10 +26,16 @@ function App() {
     <ThemeProvider>
       <Router>
         <Routes>
+          {/* Customer Routes - Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<Home />} /> {/* Placeholder for now */}
+          <Route path="/product/:id" element={<Home />} /> {/* Placeholder for now */}
+          
+          {/* Admin Routes - Protected */}
           <Route path="/login" element={<Login />} />
           
           <Route
-            path="/*"
+            path="/admin/*"
             element={
               <ProtectedRoute>
                 <MainLayout>

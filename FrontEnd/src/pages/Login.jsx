@@ -28,8 +28,8 @@ const Login = () => {
       // Save tokens using auth utility
       setTokens(token, refreshToken);
       
-      // Redirect to dashboard
-      navigate('/');
+      // Redirect to admin dashboard
+      navigate('/admin');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
