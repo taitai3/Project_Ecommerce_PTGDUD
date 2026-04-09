@@ -43,6 +43,12 @@ const customerService = {
   getTotalCustomers: async () => {
     const response = await api.get('/users/count');
     return response.data;
+  },
+
+  // Alias for getTotalCustomers
+  getCustomerCount: async () => {
+    const response = await api.get('/users/count');
+    return response.data;
   }
 };
 
