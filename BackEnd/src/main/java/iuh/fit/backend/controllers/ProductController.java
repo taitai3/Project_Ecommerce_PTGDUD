@@ -100,6 +100,23 @@ public class ProductController {
         }
     }
 
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getProductStats() {
+        try {
+            long totalProducts = productService.getTotalProductCount();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", totalProducts);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Error getting product stats");
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
     // Admin only endpoints
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
