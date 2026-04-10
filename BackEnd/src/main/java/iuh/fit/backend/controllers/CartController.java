@@ -2,6 +2,8 @@ package iuh.fit.backend.controllers;
 
 import iuh.fit.backend.dto.cart.CartItemRequest;
 import iuh.fit.backend.dto.cart.CartResponse;
+import iuh.fit.backend.entities.User;
+import iuh.fit.backend.repositories.UserRepository;
 import iuh.fit.backend.services.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
     
     private final CartService cartService;
+    private final UserRepository userRepository;
     
     @GetMapping
     public ResponseEntity<CartResponse> getCart(Authentication authentication) {
@@ -38,9 +41,10 @@ public class CartController {
     @PutMapping("/items/{itemId}")
     public ResponseEntity<CartResponse> updateItem(
             @PathVariable Long itemId,
-            @RequestParam Integer quantity,
+            @RequestBody java.util.Map<String, Integer> body,
             Authentication authentication) {
         Long userId = getUserIdFromAuth(authentication);
+        Integer quantity = body.get("quantity");
         CartResponse cart = cartService.updateCartItem(userId, itemId, quantity);
         return ResponseEntity.ok(cart);
     }
@@ -63,7 +67,9 @@ public class CartController {
     
     private Long getUserIdFromAuth(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        // Assuming username is the user ID or you need to fetch from UserRepository
-        return Long.parseLong(userDetails.getUsername());
+        String username = userDetails.getUsername();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found: " + username));
+        return user.getId();
     }
 }

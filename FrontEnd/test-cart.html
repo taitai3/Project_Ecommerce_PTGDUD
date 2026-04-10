@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Cart API</title>
+</head>
+<body>
+  <h1>Test Cart API</h1>
+  <button onclick="testAddToCart()">Test Add to Cart (Product ID: 1)</button>
+  <button onclick="testGetCart()">Test Get Cart</button>
+  <pre id="result"></pre>
+
+  <script>
+    const API_URL = 'http://localhost:8080/api';
+    const token = localStorage.getItem('token');
+
+    async function testAddToCart() {
+      const result = document.getElementById('result');
+      result.textContent = 'Adding to cart...';
+      
+      try {
+        const res = await fetch(`${API_URL}/cart/items`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ productId: 1, quantity: 1 })
+        });
+        
+        const data = await res.json();
+        result.textContent = `Status: ${res.status}\n\n${JSON.stringify(data, null, 2)}`;
+      } catch (err) {
+        result.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    async function testGetCart() {
+      const result = document.getElementById('result');
+      result.textContent = 'Getting cart...';
+      
+      try {
+        const res = await fetch(`${API_URL}/cart`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const data = await res.json();
+        result.textContent = `Status: ${res.status}\n\n${JSON.stringify(data, null, 2)}`;
+      } catch (err) {
+        result.textContent = `Error: ${err.message}`;
+      }
+    }
+
+    // Check token on load
+    if (!token) {
+      document.getElementById('result').textContent = 'No token found! Please login first at http://localhost:5174/store-login';
+    } else {
+      document.getElementById('result').textContent = `Token found: ${token.substring(0, 50)}...`;
+    }
+  </script>
+</body>
+</html>

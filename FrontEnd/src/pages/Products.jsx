@@ -170,8 +170,10 @@ const Products = () => {
           />
           <button 
             onClick={() => {
+              console.log('Add Product clicked');
               setSelectedProduct(null);
               setIsModalOpen(true);
+              console.log('Modal should be open now');
             }}
             className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
@@ -439,7 +441,10 @@ const Products = () => {
         product={selectedProduct}
         categories={categories}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          console.log('Closing modal');
+          setIsModalOpen(false);
+        }}
         onSave={handleSaveProduct}
       />
 

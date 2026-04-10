@@ -12,12 +12,12 @@ import {
 
 const Sidebar = ({ isCollapsed, onToggle }) => {
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { name: 'Categories', href: '/categories', icon: Tag },
-    { name: 'Products', href: '/products', icon: Package },
-    { name: 'Orders', href: '/orders', icon: ShoppingCart },
-    { name: 'Customers', href: '/customers', icon: Users },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Categories', href: '/admin/categories', icon: Tag },
+    { name: 'Products', href: '/admin/products', icon: Package },
+    { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+    { name: 'Customers', href: '/admin/customers', icon: Users },
+    { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   return (

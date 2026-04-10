@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { uploadService } from '../services/uploadService';
 
@@ -8,24 +8,35 @@ const ImageUpload = ({ value, onChange, className = "" }) => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Sync preview with value prop
+  useEffect(() => {
+    setPreview(value || null);
+  }, [value]);
+
   const handleFileSelect = async (file) => {
     if (file && file.type.startsWith('image/')) {
+      // Show preview immediately using local URL
+      const localPreviewUrl = URL.createObjectURL(file);
+      setPreview(localPreviewUrl);
       setIsUploading(true);
       
       try {
-        // Upload to server
+        // Upload to server in background
         const uploadResult = await uploadService.uploadImage(file);
         const imageUrl = uploadResult.url;
         
+        // Update with server URL
+        URL.revokeObjectURL(localPreviewUrl); // Clean up local URL
         setPreview(imageUrl);
         onChange(imageUrl);
       } catch (error) {
-        console.error('Upload failed:', error);
+        console.error('Upload failed, using base64:', error);
         
         // Fallback to base64 if upload fails
         const reader = new FileReader();
         reader.onload = (e) => {
           const imageUrl = e.target.result;
+          URL.revokeObjectURL(localPreviewUrl); // Clean up local URL
           setPreview(imageUrl);
           onChange(imageUrl);
         };
@@ -90,12 +101,27 @@ const ImageUpload = ({ value, onChange, className = "" }) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
           onChange={handleFileChange}
           className="hidden"
         />
 
-        {preview ? (
+        {isUploading ? (
+          /* Loading State */
+          <div className="space-y-3">
+            <div className="mx-auto w-12 h-12 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center">
+              <Loader2 className="w-6 h-6 text-primary-600 dark:text-primary-400 animate-spin" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">
+                Uploading...
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Please wait
+              </p>
+            </div>
+          </div>
+        ) : preview ? (
           /* Image Preview */
           <div className="relative">
             <img
@@ -125,7 +151,7 @@ const ImageUpload = ({ value, onChange, className = "" }) => {
                 Click to upload or drag and drop
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                PNG, JPG, GIF up to 10MB
+                PNG, JPG, GIF, WEBP up to 10MB
               </p>
             </div>
           </div>

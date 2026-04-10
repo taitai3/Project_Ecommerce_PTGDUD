@@ -76,8 +76,8 @@ public class SecurityConfig {
                 // Admin endpoints
                 .requestMatchers(SecurityEndpoints.ADMIN_ENDPOINTS).hasRole("ADMIN")
                 
-                // User endpoints
-                .requestMatchers(SecurityEndpoints.USER_ENDPOINTS).hasRole("USER")
+                // User endpoints (cả USER và ADMIN đều được dùng cart/orders)
+                .requestMatchers(SecurityEndpoints.USER_ENDPOINTS).hasAnyRole("USER", "ADMIN")
                 
                 // Any other request needs authentication
                 .anyRequest().authenticated()

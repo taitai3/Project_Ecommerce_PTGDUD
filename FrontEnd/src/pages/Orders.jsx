@@ -15,6 +15,7 @@ import orderService from '../services/orderService';
 import OrderStatusBadge from '../components/OrderStatusBadge';
 import OrderDetailModal from '../components/OrderDetailModal';
 import OrderActions from '../components/OrderActions';
+import EditableOrderStatus from '../components/EditableOrderStatus';
 import Toast from '../components/Toast';
 import ExportMenu from '../components/ExportMenu';
 import { useDebounce } from '../hooks/useDebounce';
@@ -52,19 +53,35 @@ const Orders = () => {
   const loadOrders = async (page = 0) => {
     try {
       setLoading(true);
-      const response = await orderService.getAllOrders(
-        page, 
-        pageSize, 
-        statusFilter, 
-        debouncedSearchTerm
-      );
       
-      if (response.success) {
-        setOrders(response.data);
-        setCurrentPage(response.currentPage);
-        setTotalPages(response.totalPages);
-        setTotalItems(response.totalItems);
+      // Get mock orders from localStorage
+      const mockOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+      
+      // Filter by status
+      let filteredOrders = mockOrders;
+      if (statusFilter) {
+        filteredOrders = mockOrders.filter(order => order.status === statusFilter);
       }
+      
+      // Filter by search term
+      if (debouncedSearchTerm) {
+        const searchLower = debouncedSearchTerm.toLowerCase();
+        filteredOrders = filteredOrders.filter(order => 
+          order.orderNumber.toLowerCase().includes(searchLower) ||
+          order.recipientName.toLowerCase().includes(searchLower) ||
+          order.phoneNumber.includes(searchLower)
+        );
+      }
+      
+      // Pagination
+      const startIndex = page * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedOrders = filteredOrders.slice(startIndex, endIndex);
+      
+      setOrders(paginatedOrders);
+      setCurrentPage(page);
+      setTotalPages(Math.ceil(filteredOrders.length / pageSize));
+      setTotalItems(filteredOrders.length);
     } catch (error) {
       console.error('Error loading orders:', error);
       setToast({ message: 'Lỗi khi tải danh sách đơn hàng', type: 'error' });
@@ -76,10 +93,13 @@ const Orders = () => {
   // Load stats
   const loadStats = async () => {
     try {
-      const response = await orderService.getOrderStats();
-      if (response.success) {
-        setStats(response.data);
-      }
+      const mockOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+      setStats({
+        totalOrders: mockOrders.length,
+        pendingOrders: mockOrders.filter(o => o.status === 'PENDING').length,
+        processingOrders: mockOrders.filter(o => o.status === 'PROCESSING' || o.status === 'CONFIRMED').length,
+        deliveredOrders: mockOrders.filter(o => o.status === 'DELIVERED').length,
+      });
     } catch (error) {
       console.error('Error loading stats:', error);
     }
@@ -120,12 +140,16 @@ const Orders = () => {
 
   const handleUpdateStatus = async (orderId, status) => {
     try {
-      const response = await orderService.updateOrderStatus(orderId, status);
-      if (response.success) {
-        setToast({ message: 'Cập nhật trạng thái thành công', type: 'success' });
-        loadOrders(currentPage); // Reload current page
-        loadStats(); // Reload stats
-      }
+      // Update order status in localStorage
+      const mockOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+      const updatedOrders = mockOrders.map(order => 
+        order.id === orderId ? { ...order, status: status } : order
+      );
+      localStorage.setItem('mockOrders', JSON.stringify(updatedOrders));
+      
+      setToast({ message: 'Cập nhật trạng thái thành công', type: 'success' });
+      loadOrders(currentPage);
+      loadStats();
     } catch (error) {
       console.error('Error updating status:', error);
       setToast({ message: 'Lỗi khi cập nhật trạng thái', type: 'error' });
@@ -136,12 +160,16 @@ const Orders = () => {
     if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) return;
 
     try {
-      const response = await orderService.cancelOrder(orderId);
-      if (response.success) {
-        setToast({ message: 'Hủy đơn hàng thành công', type: 'success' });
-        loadOrders(currentPage); // Reload current page
-        loadStats(); // Reload stats
-      }
+      // Update order status to CANCELLED in localStorage
+      const mockOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+      const updatedOrders = mockOrders.map(order => 
+        order.id === orderId ? { ...order, status: 'CANCELLED' } : order
+      );
+      localStorage.setItem('mockOrders', JSON.stringify(updatedOrders));
+      
+      setToast({ message: 'Hủy đơn hàng thành công', type: 'success' });
+      loadOrders(currentPage);
+      loadStats();
     } catch (error) {
       console.error('Error cancelling order:', error);
       setToast({ message: 'Lỗi khi hủy đơn hàng', type: 'error' });
@@ -150,13 +178,20 @@ const Orders = () => {
 
   const handleExportOrders = async (format) => {
     try {
-      // Get all orders for export (without pagination)
-      const response = await orderService.getAllOrders(0, 1000, statusFilter, debouncedSearchTerm);
-      if (response.success && response.data.length > 0) {
+      // Get all orders for export
+      const mockOrders = JSON.parse(localStorage.getItem('mockOrders') || '[]');
+      
+      // Filter by status if needed
+      let filteredOrders = mockOrders;
+      if (statusFilter) {
+        filteredOrders = mockOrders.filter(order => order.status === statusFilter);
+      }
+      
+      if (filteredOrders.length > 0) {
         if (format === 'csv') {
-          exportOrdersToCSV(response.data);
+          exportOrdersToCSV(filteredOrders);
         } else if (format === 'excel') {
-          exportOrdersToExcel(response.data);
+          exportOrdersToExcel(filteredOrders);
         }
         setToast({ message: `Xuất ${format.toUpperCase()} thành công`, type: 'success' });
       } else {
@@ -335,7 +370,10 @@ const Orders = () => {
                       <div className="text-sm font-medium text-slate-900 dark:text-white">{formatCurrency(order.totalAmount)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <OrderStatusBadge status={order.status} />
+                      <EditableOrderStatus
+                        status={order.status}
+                        onChange={(newStatus) => handleUpdateStatus(order.id, newStatus)}
+                      />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">

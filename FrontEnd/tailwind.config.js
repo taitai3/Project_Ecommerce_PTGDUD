@@ -24,6 +24,11 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
+      lineClamp: {
+        1: '1',
+        2: '2',
+        3: '3',
+      },
     },
   },
   plugins: [],

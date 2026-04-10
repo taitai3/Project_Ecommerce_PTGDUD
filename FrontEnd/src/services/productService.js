@@ -1,68 +1,47 @@
-import api from "./api";
+import api from './api';
 
 const productService = {
-  // Get all products with pagination
-  getAllProducts: async (page = 0, size = 10, sortBy = "createdAt", sortDir = "desc") => {
-    const response = await api.get("/products/page", {
-      params: { page, size, sortBy, sortDir }
-    });
-    return response.data;
+  getAllProducts: async (page = 0, size = 20, search = '', categoryId = '', sortBy = 'createdAt', sortDir = 'desc') => {
+    const params = new URLSearchParams({ page, size, sortBy, sortDir });
+    if (search) params.append('search', search);
+    if (categoryId) params.append('categoryId', categoryId);
+    const res = await api.get(`/products/page?${params}`);
+    return res.data;
   },
 
-  // Get all products (no pagination)
-  getAllProductsList: async () => {
-    const response = await api.get("/products");
-    return response.data;
-  },
-
-  // Get product by ID
   getProductById: async (id) => {
-    const response = await api.get(`/products/${id}`);
-    return response.data;
+    const res = await api.get(`/products/${id}`);
+    return res.data;
   },
 
-  // Get products by category
-  getProductsByCategory: async (categoryId) => {
-    const response = await api.get(`/products/category/${categoryId}`);
-    return response.data;
+  getFeaturedProducts: async (size = 8) => {
+    const res = await api.get(`/products?page=0&size=${size}&sortBy=createdAt&sortDir=desc`);
+    return res.data;
   },
 
-  // Search products
-  searchProducts: async (keyword, page = 0, size = 10) => {
-    const response = await api.get("/products/search", {
-      params: { keyword, page, size }
-    });
-    return response.data;
+  createProduct: async (productData) => {
+    const res = await api.post('/products', productData);
+    return res.data;
   },
 
-  // Get all brands
-  getAllBrands: async () => {
-    const response = await api.get("/products/brands");
-    return response.data;
+  updateProduct: async (id, productData) => {
+    const res = await api.put(`/products/${id}`, productData);
+    return res.data;
   },
 
-  // Create product (Admin only)
-  createProduct: async (data) => {
-    const response = await api.post("/products", data);
-    return response.data;
-  },
-
-  // Update product (Admin only)
-  updateProduct: async (id, data) => {
-    const response = await api.put(`/products/${id}`, data);
-    return response.data;
-  },
-
-  // Delete product (Admin only)
   deleteProduct: async (id) => {
-    const response = await api.delete(`/products/${id}`);
-    return response.data;
+    const res = await api.delete(`/products/${id}`);
+    return res.data;
   },
 
-  // Get product count (Admin only)
-  getProductCount: async () => {
-    const response = await api.get("/products/stats");
-    return response.data;
+  getAllBrands: async () => {
+    try {
+      const res = await api.get('/products/brands');
+      return res.data;
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+      return [];
+    }
   },
 };
 

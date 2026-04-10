@@ -37,11 +37,24 @@ public class CategoryService {
     }
 
     public CategoryResponse createCategory(CategoryRequest request) {
-        // Check if category name already exists
-        if (categoryRepository.existsByName(request.getName())) {
-            throw new RuntimeException("Category with name '" + request.getName() + "' already exists");
+        // Check if category name already exists among active categories
+        Category existingCategory = categoryRepository.findByName(request.getName()).orElse(null);
+        
+        if (existingCategory != null) {
+            if (existingCategory.getIsActive()) {
+                // Active category with same name exists
+                throw new RuntimeException("Category with name '" + request.getName() + "' already exists");
+            } else {
+                // Inactive category exists - reactivate it with new data
+                existingCategory.setIsActive(true);
+                existingCategory.setDescription(request.getDescription());
+                existingCategory.setImageUrl(request.getImageUrl());
+                Category reactivatedCategory = categoryRepository.save(existingCategory);
+                return convertToResponse(reactivatedCategory);
+            }
         }
 
+        // Create new category
         Category category = new Category();
         category.setName(request.getName());
         category.setDescription(request.getDescription());
@@ -55,10 +68,12 @@ public class CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
 
-        // Check if new name conflicts with existing category (excluding current one)
-        if (!category.getName().equals(request.getName()) && 
-            categoryRepository.existsByName(request.getName())) {
-            throw new RuntimeException("Category with name '" + request.getName() + "' already exists");
+        // Check if new name conflicts with existing active category (excluding current one)
+        if (!category.getName().equals(request.getName())) {
+            Category existingCategory = categoryRepository.findByName(request.getName()).orElse(null);
+            if (existingCategory != null && existingCategory.getIsActive() && !existingCategory.getId().equals(id)) {
+                throw new RuntimeException("Category with name '" + request.getName() + "' already exists");
+            }
         }
 
         category.setName(request.getName());

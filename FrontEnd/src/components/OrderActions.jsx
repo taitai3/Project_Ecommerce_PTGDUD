@@ -10,7 +10,7 @@ const OrderActions = ({ order, onViewDetails, onUpdateStatus, onCancel }) => {
   const statusActions = [
     { status: 'CONFIRMED', label: 'Xác nhận', icon: CheckCircle, color: 'text-blue-600' },
     { status: 'PROCESSING', label: 'Đang xử lý', icon: Edit, color: 'text-purple-600' },
-    { status: 'SHIPPED', label: 'Giao vận', icon: Truck, color: 'text-indigo-600' },
+    { status: 'SHIPPING', label: 'Đang giao hàng', icon: Truck, color: 'text-orange-600' },
     { status: 'DELIVERED', label: 'Đã giao', icon: CheckCircle, color: 'text-green-600' },
   ];
 
@@ -70,15 +70,8 @@ const OrderActions = ({ order, onViewDetails, onUpdateStatus, onCancel }) => {
                   </div>
                   
                   {statusActions.map(({ status, label, icon: Icon, color }) => {
-                    // Only show next possible statuses
-                    const canUpdate = (
-                      (order.status === 'PENDING' && status === 'CONFIRMED') ||
-                      (order.status === 'CONFIRMED' && status === 'PROCESSING') ||
-                      (order.status === 'PROCESSING' && status === 'SHIPPED') ||
-                      (order.status === 'SHIPPED' && status === 'DELIVERED')
-                    );
-
-                    if (!canUpdate) return null;
+                    // Admin can update to any status except current one
+                    if (order.status === status) return null;
 
                     return (
                       <button
